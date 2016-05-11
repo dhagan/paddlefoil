@@ -6,16 +6,17 @@
     .module('contactus')
     .controller('ContactusController', ContactusController);
 
-  ContactusController.$inject = ['$scope', '$state', '$http', '$mdToast', 'Authentication', 'contactuResolve'];
+  ContactusController.$inject = ['$scope', '$state', '$http', '$mdToast', 'Authentication'];
 
-  function ContactusController($scope, $state, $http, $mdToast, Authentication, contactu) {
+  function ContactusController($scope, $state, $http, $mdToast, Authentication) {
     var vm = this;
 
     vm.authentication = Authentication;
-    vm.contactu = contactu;
+    //vm.contactu = contactu;
     vm.error = null;
     vm.form = {};
     vm.remove = remove;
+    vm.mail = {};
     //vm.save = save;
 
     // Remove existing Contactu
@@ -33,6 +34,7 @@
       left: false,
       right: true
     };
+
     $scope.getToastPosition = function () {
       return Object.keys($scope.toastPosition)
         .filter(function (pos) {
@@ -41,20 +43,12 @@
         .join(' ');
     };
 
-    $mdToast.show(
-      $mdToast.simple()
-        .content('Thanks for your message ' + 'Douglas jjj' + ' You Rock!')
-        .position($scope.getToastPosition())
-        .hideDelay(5000)
-    );
-
-
     vm.sendMail = function () {
 
       var data = ({
-        contactName: $scope.conatact_name,
-        contactEmail: $scope.contactEmail,
-        contactMsg: $scope.contactMsg
+        contactName: vm.mail.contactName,
+        contactEmail: vm.mail.contactEmail,
+        contactMsg: vm.mail.contactMsg
       });
 
       // Simple POST request example (passing data) :
@@ -65,7 +59,7 @@
 
           $mdToast.show(
             $mdToast.simple()
-              .content('Thanks for your message ' + data.contactName + ' You Rock!')
+              .content('Thanks for your message ' + data.envelope.from + '!')
               .position($scope.getToastPosition())
               .hideDelay(5000)
           );
@@ -75,7 +69,7 @@
 
           $mdToast.show(
             $mdToast.simple()
-              .content('ERROR ' + data.contactName + ' You Rock!')
+              .content('ERROR ' + data.message)
               .position($scope.getToastPosition())
               .hideDelay(5000)
           );

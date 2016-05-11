@@ -1,22 +1,40 @@
 <section>
     <div class="page-header">
-        <h1>{{vm.contactu._id ? 'Edit Contact Us' : 'New Contact Us'}}</h1>
+        <h1>{{vm.mail._id ? 'Edit Contact Us' : 'Contact Us'}}</h1>
     </div>
     <div class="col-md-12">
-        <form name="vm.form.contactuForm" class="form-horizontal" ng-submit="vm.sendMail(vm.form.contactuForm.$valid)"
-              novalidate>
+        <form name="vm.form.contactuForm" class="form-horizontal" ng-submit="vm.sendMail(vm.mail)"
+              validate>
             <fieldset>
                 <div class="form-group" show-errors>
-                    <label class="control-label" for="contact_name">Name</label>
-                    <input name="contact_name" type="text" ng-model="vm.contactu.contact_name" id="contact_name"
-                           class="form-control" placeholder="Douglas" required>
+                    <label class="control-label" for="contactName">Name</label>
+                    <input name="contactName" type="text" ng-model="vm.mail.contactName" id="contactName"
+                           class="form-control" placeholder="Douglas" required/>
 
-                    <div ng-messages="vm.form.contactuForm.contact_name.$error" role="alert">
-                        <p class="help-block error-text" ng-message="required">Contactu contact_name is required.</p>
+                    <div ng-messages="vm.form.contactuForm.contactName.$error" role="alert">
+                        <p class="help-block error-text" ng-message="required">Contactu contactName is required.</p>
+                    </div>
+                </div>
+                <div class="form-group" show-errors>
+                    <label class="control-label" for="contactEmail">Email</label>
+                    <input name="contactEmail" type="email" ng-model="vm.mail.contactEmail" id="contactEmail"
+                           class="form-control" placeholder="douglas@mailinator.com" required/>
+
+                    <div ng-messages="vm.form.contactuForm.contactEmail.$error" role="alert">
+                        <p class="help-block error-text" ng-message="required">Contactu contactEmail is required.</p>
+                    </div>
+                </div>
+                <div class="form-group" show-errors>
+                    <label class="control-label" for="contactMsg">Message</label>
+                    <textarea name="contactMsg" type="text" ng-model="vm.mail.contactMsg" id="contactMsg"
+                           class="form-control" placeholder="Text goes here" required></textarea>
+
+                    <div ng-messages="vm.form.contactuForm.contactMsg.$error" role="alert">
+                        <p class="help-block error-text" ng-message="required">Contactu contactMsg is required.</p>
                     </div>
                 </div>
                 <div class="form-group">
-                    <button type="submit" class="btn btn-default">{{vm.contactu._id ? 'Update' : 'Create'}}</button>
+                    <button type="submit" ng-disabled="vm.form.contactuForm.$error.required" class="btn btn-default">{{vm.mail._id ? 'Update' : 'Send Mail'}}</button>
                 </div>
                 <div ng-show="vm.error" class="text-danger">
                     <strong ng-bind="vm.error"></strong>

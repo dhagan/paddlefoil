@@ -7,7 +7,7 @@ var path = require('path'),
   mongoose = require('mongoose'),
   Contactu = mongoose.model('Contactu'),
   nodemailer = require('nodemailer'),
-  transporter = nodemailer.createTransport(),
+  transporter = nodemailer.createTransport('smtps://ioi.supp.dev@gmail.com:paia12345@smtp.gmail.com'),
   errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
   _ = require('lodash');
 
@@ -17,14 +17,23 @@ var path = require('path'),
 exports.create = function (req, res) {
   var data = req.body;
 
-  transporter.sendMail({
+  var mailOptions = {
     from: data.contactEmail,
     to: 'dhagan@yahoo.com',
     subject: 'Message from ' + data.contactName,
     text: data.contactMsg
+  };
+
+  transporter.sendMail(mailOptions, function(error, info){
+    if(error){
+      return res.status(400).send({
+        message: error.message | errorHandler.getErrorMessage(error)
+      });
+    } else {
+      res.json(info);
+    }
   });
 
-  res.json(data);
 
   return;
 
