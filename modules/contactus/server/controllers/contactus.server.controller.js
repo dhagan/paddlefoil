@@ -26,6 +26,7 @@ exports.create = function (req, res) {
 
   transporter.sendMail(mailOptions, function(error, info){
     if(error){
+      console.log(error);
       return res.status(400).send({
         message: error.message | errorHandler.getErrorMessage(error)
       });

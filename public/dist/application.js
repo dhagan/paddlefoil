@@ -282,7 +282,7 @@ ApplicationConfiguration.registerModule('users.admin.routes', ['core.admin.route
 
           $mdToast.show(
             $mdToast.simple()
-              .content('Thanks for your message ' + data.envelope.from + '!')
+              .content('Thank you for your message ' + data.envelope.from + '!')
               .position($scope.getToastPosition())
               .hideDelay(5000)
           );
