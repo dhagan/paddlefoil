@@ -14,15 +14,6 @@
         url: '/contactus',
         template: '<ui-view/>'
       })
-      .state('contactus.list', {
-        url: '',
-        templateUrl: 'modules/contactus/client/views/list-contactus.client.view.html',
-        controller: 'ContactusListController',
-        controllerAs: 'vm',
-        data: {
-          pageTitle: 'Contactus List'
-        }
-      })
       .state('contactus.create', {
         url: '/create',
         templateUrl: 'modules/contactus/client/views/form-contactu.client.view.html',
@@ -32,8 +23,7 @@
           contactuResolve: newContactu
         },
         data: {
-          roles: ['user', 'admin'],
-          pageTitle : 'Contactus Create'
+          pageTitle: 'Contactus Create'
         }
       })
       .state('contactus.edit', {
@@ -57,7 +47,7 @@
         resolve: {
           contactuResolve: getContactu
         },
-        data:{
+        data: {
           pageTitle: 'Contactu {{ articleResolve.name }}'
         }
       });

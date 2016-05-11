@@ -16,5 +16,12 @@
       roles: ['*']
     });
 
+
+    // Add the dropdown create item
+    Menus.addSubMenuItem('topbar', 'contactus', {
+      title: 'Contact Us',
+      state: 'contactus.create',
+      roles: ['*']
+    });
   }
 })();

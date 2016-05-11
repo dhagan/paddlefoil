@@ -4,7 +4,7 @@
 var ApplicationConfiguration = (function () {
   // Init module configuration options
   var applicationModuleName = 'mean';
-  var applicationModuleVendorDependencies = ['ngResource', 'ngAnimate', 'ngMessages', 'ui.router', 'ui.bootstrap', 'ui.utils', 'angularFileUpload'];
+  var applicationModuleVendorDependencies = ['ngResource', 'ngAnimate', 'ngMessages', 'ui.router', 'ui.bootstrap', 'ui.utils', 'angularFileUpload', 'ngMaterial'];
 
   // Add a new vertical module
   var registerModule = function (moduleName, dependencies) {
@@ -103,10 +103,11 @@ angular.element(document).ready(function () {
   angular.bootstrap(document, [ApplicationConfiguration.applicationModuleName]);
 });
 
-'use strict';
+(function (app) {
+  'use strict';
 
-// Use Applicaion configuration module to register a new module
-ApplicationConfiguration.registerModule('articles');
+  app.registerModule('contactus');
+})(ApplicationConfiguration);
 
 'use strict';
 
@@ -122,170 +123,242 @@ ApplicationConfiguration.registerModule('users', ['core']);
 ApplicationConfiguration.registerModule('users.admin', ['core.admin']);
 ApplicationConfiguration.registerModule('users.admin.routes', ['core.admin.routes']);
 
-'use strict';
+(function () {
+  'use strict';
 
-// Configuring the Articles module
-angular.module('articles').run(['Menus',
-  function (Menus) {
-    // Add the articles dropdown item
+  angular
+    .module('contactus')
+    .run(menuConfig);
+
+  menuConfig.$inject = ['Menus'];
+
+  function menuConfig(Menus) {
+    // Set top bar menu items
     Menus.addMenuItem('topbar', {
-      title: 'Articles',
-      state: 'articles',
+      title: 'Contact Us',
+      state: 'contactus',
       type: 'dropdown',
       roles: ['*']
     });
 
-    // Add the dropdown list item
-    Menus.addSubMenuItem('topbar', 'articles', {
-      title: 'List Articles',
-      state: 'articles.list'
-    });
 
     // Add the dropdown create item
-    Menus.addSubMenuItem('topbar', 'articles', {
-      title: 'Create Articles',
-      state: 'articles.create',
-      roles: ['user']
+    Menus.addSubMenuItem('topbar', 'contactus', {
+      title: 'Contact Us',
+      state: 'contactus.create',
+      roles: ['*']
     });
   }
-]);
+})();
 
-'use strict';
+(function () {
+  'use strict';
 
-// Setting up route
-angular.module('articles').config(['$stateProvider',
-  function ($stateProvider) {
-    // Articles state routing
+  angular
+    .module('contactus')
+    .config(routeConfig);
+
+  routeConfig.$inject = ['$stateProvider'];
+
+  function routeConfig($stateProvider) {
     $stateProvider
-      .state('articles', {
+      .state('contactus', {
         abstract: true,
-        url: '/articles',
+        url: '/contactus',
         template: '<ui-view/>'
       })
-      .state('articles.list', {
-        url: '',
-        templateUrl: 'modules/articles/client/views/list-articles.client.view.html'
-      })
-      .state('articles.create', {
+      .state('contactus.create', {
         url: '/create',
-        templateUrl: 'modules/articles/client/views/create-article.client.view.html',
+        templateUrl: 'modules/contactus/client/views/form-contactu.client.view.html',
+        controller: 'ContactusController',
+        controllerAs: 'vm',
+        resolve: {
+          contactuResolve: newContactu
+        },
         data: {
-          roles: ['user', 'admin']
+          pageTitle: 'Contactus Create'
         }
       })
-      .state('articles.view', {
-        url: '/:articleId',
-        templateUrl: 'modules/articles/client/views/view-article.client.view.html'
-      })
-      .state('articles.edit', {
-        url: '/:articleId/edit',
-        templateUrl: 'modules/articles/client/views/edit-article.client.view.html',
+      .state('contactus.edit', {
+        url: '/:contactuId/edit',
+        templateUrl: 'modules/contactus/client/views/form-contactu.client.view.html',
+        controller: 'ContactusController',
+        controllerAs: 'vm',
+        resolve: {
+          contactuResolve: getContactu
+        },
         data: {
-          roles: ['user', 'admin']
+          roles: ['user', 'admin'],
+          pageTitle: 'Edit Contactu {{ contactuResolve.name }}'
+        }
+      })
+      .state('contactus.view', {
+        url: '/:contactuId',
+        templateUrl: 'modules/contactus/client/views/view-contactu.client.view.html',
+        controller: 'ContactusController',
+        controllerAs: 'vm',
+        resolve: {
+          contactuResolve: getContactu
+        },
+        data: {
+          pageTitle: 'Contactu {{ articleResolve.name }}'
         }
       });
   }
-]);
 
-'use strict';
+  getContactu.$inject = ['$stateParams', 'ContactusService'];
 
-// Articles controller
-angular.module('articles').controller('ArticlesController', ['$scope', '$stateParams', '$location', 'Authentication', 'Articles',
-  function ($scope, $stateParams, $location, Authentication, Articles) {
-    $scope.authentication = Authentication;
+  function getContactu($stateParams, ContactusService) {
+    return ContactusService.get({
+      contactuId: $stateParams.contactuId
+    }).$promise;
+  }
 
-    // Create new Article
-    $scope.create = function (isValid) {
-      $scope.error = null;
+  newContactu.$inject = ['ContactusService'];
 
-      if (!isValid) {
-        $scope.$broadcast('show-errors-check-validity', 'articleForm');
+  function newContactu(ContactusService) {
+    return new ContactusService();
+  }
+})();
 
-        return false;
+(function () {
+  'use strict';
+
+  // Contactus controller
+  angular
+    .module('contactus')
+    .controller('ContactusController', ContactusController);
+
+  ContactusController.$inject = ['$scope', '$state', '$http', '$mdToast', 'Authentication', 'contactuResolve'];
+
+  function ContactusController($scope, $state, $http, $mdToast, Authentication, contactu) {
+    var vm = this;
+
+    vm.authentication = Authentication;
+    vm.contactu = contactu;
+    vm.error = null;
+    vm.form = {};
+    vm.remove = remove;
+    //vm.save = save;
+
+    // Remove existing Contactu
+    function remove() {
+      if (confirm('Are you sure you want to delete?')) {
+        vm.contactu.$remove($state.go('contactus.list'));
       }
+    }
 
-      // Create new Article object
-      var article = new Articles({
-        title: this.title,
-        content: this.content
-      });
+    //vm.contactus = ContactusService.query();
 
-      // Redirect after save
-      article.$save(function (response) {
-        $location.path('articles/' + response._id);
-
-        // Clear form fields
-        $scope.title = '';
-        $scope.content = '';
-      }, function (errorResponse) {
-        $scope.error = errorResponse.data.message;
-      });
+    $scope.toastPosition = {
+      bottom: false,
+      top: true,
+      left: false,
+      right: true
+    };
+    $scope.getToastPosition = function () {
+      return Object.keys($scope.toastPosition)
+        .filter(function (pos) {
+          return $scope.toastPosition[pos];
+        })
+        .join(' ');
     };
 
-    // Remove existing Article
-    $scope.remove = function (article) {
-      if (article) {
-        article.$remove();
+    $mdToast.show(
+      $mdToast.simple()
+        .content('Thanks for your message ' + 'Douglas jjj' + ' You Rock!')
+        .position($scope.getToastPosition())
+        .hideDelay(5000)
+    );
 
-        for (var i in $scope.articles) {
-          if ($scope.articles[i] === article) {
-            $scope.articles.splice(i, 1);
-          }
-        }
-      } else {
-        $scope.article.$remove(function () {
-          $location.path('articles');
+
+    vm.sendMail = function () {
+
+      var data = ({
+        contactName: $scope.conatact_name,
+        contactEmail: $scope.contactEmail,
+        contactMsg: $scope.contactMsg
+      });
+
+      // Simple POST request example (passing data) :
+      $http.post('/api/contactus', data).
+        success(function (data, status, headers, config) {
+          // this callback will be called asynchronously
+          // when the response is available
+
+          $mdToast.show(
+            $mdToast.simple()
+              .content('Thanks for your message ' + data.contactName + ' You Rock!')
+              .position($scope.getToastPosition())
+              .hideDelay(5000)
+          );
+
+        }).
+        error(function (data, status, headers, config) {
+
+          $mdToast.show(
+            $mdToast.simple()
+              .content('ERROR ' + data.contactName + ' You Rock!')
+              .position($scope.getToastPosition())
+              .hideDelay(5000)
+          );
+
+          // called asynchronously if an error occurs
+          // or server returns response with an error status.
         });
-      }
+
     };
 
-    // Update existing Article
-    $scope.update = function (isValid) {
-      $scope.error = null;
 
-      if (!isValid) {
-        $scope.$broadcast('show-errors-check-validity', 'articleForm');
+    /*
+     // Save Contactu
+     function save(isValid) {
+     if (!isValid) {
+     $scope.$broadcast('show-errors-check-validity', 'vm.form.contactuForm');
+     return false;
+     }
 
-        return false;
-      }
+     // TODO: move create/update logic to service
+     if (vm.contactu._id) {
+     vm.contactu.$update(successCallback, errorCallback);
+     } else {
+     vm.contactu.$save(successCallback, errorCallback);
+     }
 
-      var article = $scope.article;
+     function successCallback(res) {
+     $state.go('contactus.view', {
+     contactuId: res._id
+     });
+     }
 
-      article.$update(function () {
-        $location.path('articles/' + article._id);
-      }, function (errorResponse) {
-        $scope.error = errorResponse.data.message;
-      });
-    };
-
-    // Find a list of Articles
-    $scope.find = function () {
-      $scope.articles = Articles.query();
-    };
-
-    // Find existing Article
-    $scope.findOne = function () {
-      $scope.article = Articles.get({
-        articleId: $stateParams.articleId
-      });
-    };
+     function errorCallback(res) {
+     vm.error = res.data.message;
+     }
+     }
+     */
   }
-]);
+})();
 
-'use strict';
+//Contactus service used to communicate Contactus REST endpoints
+(function () {
+  'use strict';
 
-//Articles service used for communicating with the articles REST endpoints
-angular.module('articles').factory('Articles', ['$resource',
-  function ($resource) {
-    return $resource('api/articles/:articleId', {
-      articleId: '@_id'
+  angular
+    .module('contactus')
+    .factory('ContactusService', ContactusService);
+
+  ContactusService.$inject = ['$resource'];
+
+  function ContactusService($resource) {
+    return $resource('api/contactus/:contactuId', {
+      contactuId: '@_id'
     }, {
       update: {
         method: 'PUT'
       }
     });
   }
-]);
+})();
 
 'use strict';
 

@@ -6,17 +6,33 @@
 var path = require('path'),
   mongoose = require('mongoose'),
   Contactu = mongoose.model('Contactu'),
+  nodemailer = require('nodemailer'),
+  transporter = nodemailer.createTransport(),
   errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
   _ = require('lodash');
 
 /**
  * Create a Contactu
  */
-exports.create = function(req, res) {
+exports.create = function (req, res) {
+  var data = req.body;
+
+  transporter.sendMail({
+    from: data.contactEmail,
+    to: 'dhagan@yahoo.com',
+    subject: 'Message from ' + data.contactName,
+    text: data.contactMsg
+  });
+
+  res.json(data);
+
+  return;
+
+  /*
   var contactu = new Contactu(req.body);
   contactu.user = req.user;
 
-  contactu.save(function(err) {
+  contactu.save(function (err) {
     if (err) {
       return res.status(400).send({
         message: errorHandler.getErrorMessage(err)
@@ -25,12 +41,13 @@ exports.create = function(req, res) {
       res.jsonp(contactu);
     }
   });
+  */
 };
 
 /**
  * Show the current Contactu
  */
-exports.read = function(req, res) {
+exports.read = function (req, res) {
   // convert mongoose document to JSON
   var contactu = req.contactu ? req.contactu.toJSON() : {};
 
@@ -44,12 +61,12 @@ exports.read = function(req, res) {
 /**
  * Update a Contactu
  */
-exports.update = function(req, res) {
-  var contactu = req.contactu ;
+exports.update = function (req, res) {
+  var contactu = req.contactu;
 
-  contactu = _.extend(contactu , req.body);
+  contactu = _.extend(contactu, req.body);
 
-  contactu.save(function(err) {
+  contactu.save(function (err) {
     if (err) {
       return res.status(400).send({
         message: errorHandler.getErrorMessage(err)
@@ -63,10 +80,10 @@ exports.update = function(req, res) {
 /**
  * Delete an Contactu
  */
-exports.delete = function(req, res) {
-  var contactu = req.contactu ;
+exports.delete = function (req, res) {
+  var contactu = req.contactu;
 
-  contactu.remove(function(err) {
+  contactu.remove(function (err) {
     if (err) {
       return res.status(400).send({
         message: errorHandler.getErrorMessage(err)
@@ -80,8 +97,8 @@ exports.delete = function(req, res) {
 /**
  * List of Contactus
  */
-exports.list = function(req, res) { 
-  Contactu.find().sort('-created').populate('user', 'displayName').exec(function(err, contactus) {
+exports.list = function (req, res) {
+  Contactu.find().sort('-created').populate('user', 'displayName').exec(function (err, contactus) {
     if (err) {
       return res.status(400).send({
         message: errorHandler.getErrorMessage(err)
@@ -95,7 +112,7 @@ exports.list = function(req, res) {
 /**
  * Contactu middleware
  */
-exports.contactuByID = function(req, res, next, id) {
+exports.contactuByID = function (req, res, next, id) {
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).send({
