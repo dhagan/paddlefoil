@@ -7,7 +7,7 @@ var path = require('path'),
   mongoose = require('mongoose'),
   Contactu = mongoose.model('Contactu'),
   nodemailer = require('nodemailer'),
-  transporter = nodemailer.createTransport('smtps://ioi.supp.dev@gmail.com:paia12345@smtp.gmail.com'),
+  transporter = nodemailer.createTransport('smtps://user:password@smtp.gmail.com'),
   errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
   _ = require('lodash');
 
